@@ -1,0 +1,494 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docu-AI — Document & AI Chatbot</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="{% static 'chatbot/style.css' %}">
+</head>
+<body>
+
+    <div class="app-wrapper">
+
+        <!-- Mobile Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- ========================================================= -->
+        <!-- LEFT SIDEBAR                                              -->
+        <!-- ========================================================= -->
+        <aside class="sidebar" id="sidebar">
+
+            <!-- Sidebar Header -->
+            <div class="sidebar-header">
+                <button type="button" class="brand-logo-btn" id="sidebarLogoBtn" title="Docu-AI" aria-label="Docu-AI">
+                    <div class="brand-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M6 2H14L20 8V20C20 21.1046 19.1046 22 18 22H6C4.89543 22 4 21.1046 4 20V4C4 2.89543 4.89543 2 6 2Z" fill="rgba(56, 189, 248, 0.16)" stroke="#38bdf8" stroke-width="1.7" stroke-linejoin="round"/>
+                            <path d="M14 2V7.5C14 7.77614 14.2239 8 14.5 8H20" stroke="#38bdf8" stroke-width="1.7" fill="rgba(56, 189, 248, 0.35)" stroke-linejoin="round"/>
+                            <line x1="8" y1="12" x2="16" y2="12" stroke="#38bdf8" stroke-width="1.7" stroke-linecap="round"/>
+                            <line x1="8" y1="15" x2="16" y2="15" stroke="#38bdf8" stroke-width="1.7" stroke-linecap="round"/>
+                            <line x1="8" y1="18" x2="13" y2="18" stroke="#38bdf8" stroke-width="1.7" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                </button>
+                <button type="button" class="sidebar-toggle-btn" id="sidebarCloseBtn" title="Close Sidebar" aria-label="Close Sidebar">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- New Chat Button (Top Left) -->
+            <div class="new-chat-container">
+                <button type="button" class="new-chat-btn" id="newChatBtn" title="Start a fresh conversation">
+                    <div class="new-chat-left">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <span>New chat</span>
+                    </div>
+                    <span class="new-chat-shortcut">Ctrl+K</span>
+                </button>
+
+                <!-- Uploaded Documents Button (Directly under New chat) -->
+                <button type="button" class="uploaded-docs-nav-btn" id="uploadedDocsNavBtn" title="View all uploaded files">
+                    <div class="uploaded-docs-btn-left">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        <span>Uploaded Files</span>
+                    </div>
+                    <span class="uploaded-docs-count-pill" id="uploadedDocsCountPill">0</span>
+                </button>
+            </div>
+
+            <!-- Scrollable Sections Body (Pinned Messages + Recent Chats) -->
+            <div class="sidebar-body">
+
+                <!-- 1. Pinned Messages Section -->
+                <div class="sidebar-section">
+                    <div class="sidebar-section-header">
+                        <span>📌 Pinned Messages</span>
+                        <span class="sidebar-count" id="pinnedCount">0</span>
+                    </div>
+                    <div class="nav-list" id="pinnedList">
+                        <!-- Pinned chats dynamically inserted here -->
+                    </div>
+                </div>
+
+                <!-- 2. Old Chats / Recent History Section -->
+                <div class="sidebar-section">
+                    <div class="sidebar-section-header">
+                        <span style="display: inline-flex; align-items: center; gap: 6px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.45));">
+                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" fill="rgba(56, 189, 248, 0.22)" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span>Recent Chats</span>
+                        </span>
+                        <span class="sidebar-count" id="chatsCount">0</span>
+                    </div>
+                    <div class="nav-list" id="chatHistoryList">
+                        <!-- Populated by script.js -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- UPLOAD DOCUMENTS (Positioned Directly Above Rahul Online) -->
+            <!-- ========================================================= -->
+            <div class="sidebar-bottom-upload">
+                <div class="sidebar-section-header" style="padding: 0 2px 6px 2px;">
+                    <span>📁 Upload Documents</span>
+                </div>
+
+                <button type="button" class="sidebar-upload-trigger-btn" id="sidebarUploadTriggerBtn" title="Upload a document">
+                    <div class="sidebar-upload-btn-left">
+                        <span class="sidebar-upload-icon">📎</span>
+                        <span class="sidebar-upload-text">Upload Document</span>
+                    </div>
+                    <span class="sidebar-upload-badge">PDF/DOCX</span>
+                </button>
+
+                <!-- Sidebar Active Attached Document Chip (if file selected) -->
+                <div class="sidebar-active-doc" id="sidebarActiveDoc">
+                    <div class="sidebar-active-doc-info">
+                        <span>📄</span>
+                        <span class="sidebar-active-doc-name" id="sidebarDocName">file.pdf</span>
+                    </div>
+                    <button type="button" class="sidebar-doc-remove" id="sidebarRemoveDocBtn" title="Remove attached file">✖</button>
+                </div>
+            </div>
+
+            <!-- Sidebar Footer (Rahul Online) -->
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">R</div>
+                    <div class="user-details">
+                        <span class="user-name">Rahul</span>
+                        <span class="user-status">
+                            <span class="status-dot"></span> Online
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- ========================================================= -->
+        <!-- MAIN CHAT AREA                                            -->
+        <!-- ========================================================= -->
+        <main class="main-chat">
+
+            <!-- Top Header Bar -->
+            <header class="top-navbar">
+                <div class="top-navbar-left">
+                    <button type="button" class="sidebar-open-logo-btn" id="sidebarOpenLogoBtn" title="Show Sidebar" aria-label="Show Sidebar">
+                        <div class="brand-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6 2H14L20 8V20C20 21.1046 19.1046 22 18 22H6C4.89543 22 4 21.1046 4 20V4C4 2.89543 4.89543 2 6 2Z" fill="rgba(56, 189, 248, 0.16)" stroke="#38bdf8" stroke-width="1.7" stroke-linejoin="round"/>
+                                <path d="M14 2V7.5C14 7.77614 14.2239 8 14.5 8H20" stroke="#38bdf8" stroke-width="1.7" fill="rgba(56, 189, 248, 0.35)" stroke-linejoin="round"/>
+                                <line x1="8" y1="12" x2="16" y2="12" stroke="#38bdf8" stroke-width="1.7" stroke-linecap="round"/>
+                                <line x1="8" y1="15" x2="16" y2="15" stroke="#38bdf8" stroke-width="1.7" stroke-linecap="round"/>
+                                <line x1="8" y1="18" x2="13" y2="18" stroke="#38bdf8" stroke-width="1.7" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                    </button>
+                    <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu" style="display: none;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="top-navbar-right">
+
+                    <!-- Theme Toggle Button -->
+                    <button type="button" class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Light / Dark Mode" aria-label="Toggle Theme">
+                        <span class="theme-icon-badge">
+                            <svg class="theme-svg sun-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="4.5" fill="currentColor"></circle>
+                                <line x1="12" y1="1" x2="12" y2="3"></line>
+                                <line x1="12" y1="21" x2="12" y2="23"></line>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                <line x1="1" y1="12" x2="3" y2="12"></line>
+                                <line x1="21" y1="12" x2="23" y2="12"></line>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                            </svg>
+                            <svg class="theme-svg moon-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                        </span>
+                        <span class="theme-label" id="themeLabel">Dark</span>
+                    </button>
+
+                    <!-- Account Details Dropdown (New chat, Upload documents, Clear chat, Logout) -->
+                    <div class="account-dropdown-wrapper" id="accountDropdownWrapper">
+                        <button type="button" class="account-trigger-btn" id="accountTriggerBtn" title="Account Details" aria-haspopup="true" aria-expanded="false">
+                            <div class="account-avatar-wrapper">
+                                <div class="account-trigger-avatar" id="accountTriggerAvatar">R</div>
+                                <span class="account-status-dot" title="Active"></span>
+                            </div>
+                            <svg class="account-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+
+                        <div class="account-menu-dropdown" id="accountMenuDropdown">
+                            <div class="account-menu-header">
+                                <div class="account-header-avatar">R</div>
+                                <div class="account-header-info">
+                                    <span class="account-user-name">Rahul</span>
+                                    <span class="account-user-role">Active Account</span>
+                                </div>
+                            </div>
+
+                            <div class="account-menu-divider"></div>
+
+                            <div class="account-menu-items">
+                                <button type="button" class="account-menu-item" id="accountNewChatBtn">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                    <span>New chat</span>
+                                </button>
+                                <button type="button" class="account-menu-item" id="accountUploadDocsBtn">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                    </svg>
+                                    <span>Upload documents</span>
+                                </button>
+                                <button type="button" class="account-menu-item" id="accountClearChatBtn">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                    <span>Clear chat</span>
+                                </button>
+                            </div>
+
+                            <div class="account-menu-divider"></div>
+
+                            <div class="account-menu-footer">
+                                <button type="button" class="account-logout-btn" id="accountLogoutBtn">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                        <polyline points="16 17 21 12 16 7"></polyline>
+                                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                                    </svg>
+                                    <span>Logout</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Scrollable Messages Container -->
+            <div class="chat-container" id="chatScrollContainer">
+                <div class="chat-inner">
+
+                    <!-- Welcome Hero State (ChatGPT style empty screen) -->
+                    <div class="welcome-hero" id="welcomeHero">
+                        <h1 class="hero-title">Where should we begin?</h1>
+                        <p class="hero-subtitle">
+                            Upload a document (PDF, DOCX, TXT, CSV) or ask any questions to start chatting with your AI assistant.
+                        </p>
+                    </div>
+
+                    <!-- Message Feed -->
+                    <div class="messages-list" id="chatMessages">
+                        <!-- Messages dynamically inserted here -->
+                    </div>
+
+                    <!-- Dynamic Smart Status Indicator -->
+                    <div class="typing-indicator" id="typingIndicator">
+                        <div class="message-avatar bot-avatar pulse-glow" id="indicatorAvatar">
+                            <span id="indicatorAvatarIcon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 2H14L20 8V20C20 21.1046 19.1046 22 18 22H6C4.89543 22 4 21.1046 4 20V4C4 2.89543 4.89543 2 6 2Z" fill="rgba(56, 189, 248, 0.16)" stroke="#38bdf8" stroke-width="1.7" stroke-linejoin="round"/>
+                                    <path d="M14 2V7.5C14 7.77614 14.2239 8 14.5 8H20" stroke="#38bdf8" stroke-width="1.7" fill="rgba(56, 189, 248, 0.35)" stroke-linejoin="round"/>
+                                    <line x1="8" y1="12" x2="16" y2="12" stroke="#38bdf8" stroke-width="1.7" stroke-linecap="round"/>
+                                    <line x1="8" y1="15" x2="16" y2="15" stroke="#38bdf8" stroke-width="1.7" stroke-linecap="round"/>
+                                    <line x1="8" y1="18" x2="13" y2="18" stroke="#38bdf8" stroke-width="1.7" stroke-linecap="round"/>
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="indicator-content">
+                            <div class="indicator-status-pill">
+                                <span class="indicator-icon" id="statusIcon">📄</span>
+                                <span class="typing-text" id="statusText">Generating response</span>
+                            </div>
+                            <div class="typing-dots">
+                                <span class="typing-dot"></span>
+                                <span class="typing-dot"></span>
+                                <span class="typing-dot"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- FLOATING BOTTOM INPUT BAR                                 -->
+            <!-- ========================================================= -->
+            <div class="bottom-container">
+                <div class="input-box-wrapper">
+
+                    <!-- File Preview Pill above Input -->
+                    <div class="file-preview-bar" id="filePreviewBar">
+                        <div class="file-preview-left">
+                            <span>📄</span>
+                            <span class="file-preview-name" id="fileNameDisplay">document.pdf</span>
+                            <span class="file-preview-size" id="fileSizeDisplay"></span>
+                        </div>
+                        <button type="button" class="file-remove-btn" id="removeFileBtn" title="Remove attached file">
+                            ✖
+                        </button>
+                    </div>
+
+                    <!-- The Main Pill Input Bar -->
+                    <div class="input-pill">
+
+                        <!-- Hidden File Input for Direct Upload -->
+                        <input
+                            type="file"
+                            id="fileInput"
+                            hidden
+                            accept=".pdf,.doc,.docx,.txt,.csv"
+                        >
+
+                        <!-- Attach Button (📎 opens Upload Pop-up Modal) -->
+                        <button
+                            type="button"
+                            class="upload-btn"
+                            id="uploadBtn"
+                            title="Upload Document (PDF, DOC, DOCX, TXT, CSV)"
+                            aria-label="Upload Document"
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                            </svg>
+                        </button>
+
+                        <!-- Main Question Input -->
+                        <textarea
+                            id="questionInput"
+                            class="chat-input"
+                            rows="1"
+                            placeholder="Ask anything or ask about your document..."
+                            autocomplete="off"
+                        ></textarea>
+
+                        <!-- Send Button (➤) -->
+                        <button
+                            type="button"
+                            class="send-btn"
+                            id="sendButton"
+                            title="Send Message (Enter)"
+                            aria-label="Send Message"
+                        >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <line x1="12" y1="19" x2="12" y2="5"></line>
+                                <polyline points="5 12 12 5 19 12"></polyline>
+                            </svg>
+                        </button>
+
+                    </div>
+
+                    <div class="disclaimer-text">
+                        Docu-AI can analyze documents and answer questions. Verify important information.
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- UPLOAD DOCUMENTS POP-UP MODAL                             -->
+    <!-- ========================================================= -->
+    <div class="modal-overlay" id="uploadModalOverlay">
+        <div class="upload-modal" id="uploadModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <span class="modal-icon">📁</span>
+                    <h2 id="modalTitle">Upload Document</h2>
+                </div>
+                <button type="button" class="modal-close-btn" id="closeUploadModalBtn" title="Close" aria-label="Close dialog">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <p class="modal-description">
+                    Upload a document to ask specific questions, extract insights, or summarize content with Docu-AI.
+                </p>
+
+                <!-- Hidden file input used by modal -->
+                <input
+                    type="file"
+                    id="modalFileInput"
+                    hidden
+                    accept=".pdf,.doc,.docx,.txt,.csv"
+                >
+
+                <!-- Drop area -->
+                <div class="modal-drop-area" id="modalDropArea">
+                    <div class="drop-icon">📎</div>
+                    <div class="drop-primary-text">Click to choose a file or drag & drop</div>
+                    <div class="drop-secondary-text">Supported formats: PDF, DOC, DOCX, TXT, CSV</div>
+                    <button type="button" class="modal-choose-btn" id="modalChooseFileBtn">
+                        Choose Document
+                    </button>
+                </div>
+
+                <!-- Selected file preview card inside modal -->
+                <div class="modal-selected-file" id="modalSelectedFileCard" style="display: none;">
+                    <div class="modal-file-info">
+                        <span class="modal-file-icon">📄</span>
+                        <div class="modal-file-text">
+                            <span class="modal-file-name" id="modalFileName">filename.pdf</span>
+                            <span class="modal-file-size" id="modalFileSize">120 KB</span>
+                        </div>
+                    </div>
+                    <button type="button" class="modal-file-remove" id="modalRemoveFileBtn" title="Remove file">✖</button>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="modal-btn-cancel" id="modalCancelBtn">Cancel</button>
+                <button type="button" class="modal-btn-confirm" id="modalAttachBtn">Attach to Chat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- UPLOADED DOCUMENTS HISTORY POP-UP MODAL                   -->
+    <!-- ========================================================= -->
+    <div class="modal-overlay" id="uploadedDocsModalOverlay">
+        <div class="upload-modal docs-history-modal" id="uploadedDocsModal" role="dialog" aria-modal="true" aria-labelledby="docsModalTitle">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <span class="modal-icon">📁</span>
+                    <h2 id="docsModalTitle">Uploaded Files</h2>
+                    <span class="modal-count-pill" id="docsModalCountPill">0 files</span>
+                </div>
+                <button type="button" class="modal-close-btn" id="closeDocsHistoryModalBtn" title="Close" aria-label="Close dialog">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="modal-body" style="padding-top: 10px;">
+                <p class="modal-description">
+                    All documents uploaded with timestamps. Click any document to attach it to your chat.
+                </p>
+
+                <div class="uploaded-docs-list" id="uploadedDocsContainer">
+                    <!-- Populated dynamically via script.js -->
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="modal-btn-confirm" id="closeDocsHistoryFooterBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Django Static JavaScript -->
+    <script src="{% static 'chatbot/script.js' %}"></script>
+
+</body>
+</html>
